@@ -1,12 +1,10 @@
-import express from "express"
-import {fetch, create, update, deleteProject} from "../controller/projectController.js"
+const router = require('express').Router();
+const {ProjectController } = require('../controller');
 
-const route = express.Router();
+router.get('', ProjectController.index);
+router.post('', ProjectController.create);
+router.get('/:id', ProjectController.show);
+router.put('/:id', ProjectController.update);
+router.delete('/:id', ProjectController.delete);
 
-route.get("/getallprojects", fetch);
-route.post("/create", create);
-route.put("/update/:id", update);
-route.delete("/delete/:id", deleteProject);
-
-
-export default route;
+module.exports = router;

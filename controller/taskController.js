@@ -1,97 +1,163 @@
-// Import Task and Project models
-import Task from "../model/taskModel.js";
-import Project from "../model/projectModel.js";
+const {Task}= require('../model');
 
-// For posting a new task into the database
-export const createTask = async (req, res) => {
-    try {
-        const { title, description, status, priority, assignedTo, dueDate, projectId } = req.body;
+module.exports={
+    /**
+     * 
+     * GET api/v1/tasks
+     * 
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     */
 
-        // Create a new Task instance
-        const taskData = new Task({
-            title,
-            description,
-            status,
-            priority,
-            assignedTo,
-            dueDate,
-            projectId
+    index: async (req, res) =>{
+        try{
+            const tasks = await Task.find({});
+            return res.status(200).json({
+                success:true,
+                message:'Successfully retrieved all tasks',
+                data:tasks,
+            });
+        }catch(error){
+            return res.status(500).json({
+                success:false,
+                message:error.message,
+                data:error,
+            });
+        }
+    },
+
+    /**
+     * 
+     * POST api/v1/tasks
+     * 
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     * 
+     */
+
+    create: async (req, res) =>{
+        try{
+            const task = await Task.create(req.body);
+            return res.status(200).json({
+                success:true,
+                message:'Successfully created the task',
+                data:task,
+            });
+        }catch(error){
+            return res.status(500).json({
+                success:false,
+                message:error.message,
+                data:error,
+            });
+        }
+    },
+
+    /**
+     * 
+     * GET api/v1/tasks/:id
+     * 
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     * 
+     */
+
+    show: async (req, res) =>{
+        try{
+            const task = await Task.findById(req.params.id);
+            if(!task){
+                return res.status(404).json({
+                    success:false,
+                    message:'Task not found',
+                    data:null,
+                });
+            }
+            return res.status(200).json({
+                success:true,
+                message:'Successfully retrieved the task',
+                data:task,
+            });
+        }catch(error){
+            return res.status(500).json({
+                success:false,
+                message:error.message,
+                data:error,
+            });
+        }
+    },
+
+    /**
+     * 
+     * PUT api/v1/tasks/:id
+     * 
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     * 
+     */
+    update: async (req, res) => {
+        try {
+          const task = await Task.findByIdAndUpdate({ _id: req.params.id }, {
+            name: req.body.name,
+            description: req.body.description,
+            status: req.body.status,
+            dueDate: req.body.dueDate,
+          }, {
+            new: true,
         });
-
-        // Save the new task into the database
-        const savedTask = await taskData.save();
-
-        // Add task to the project
-        await Project.findByIdAndUpdate(projectId, { $push: { tasks: savedTask._id } });
-
-        // Send a success response with the saved task data
-        res.status(200).json(savedTask);
-    } catch (error) {
-        // Handle any errors and send an internal server error response
-        res.status(500).json({ error: "Internal Server Error." });
-    }
-}
-
-// For getting all tasks from the database
-export const fetchTasks = async (req, res) => {
-    try {
-        // Find all tasks in the database
-        const tasks = await Task.find().populate('assignedTo projectId');
-
-        // If no tasks are found, send a 404 error response
-        if (tasks.length === 0) {
-            return res.status(404).json({ message: "Tasks not found." });
+        if (!task) {
+          return res.status(404).json({
+            success: false,
+            message: 'Task not found',
+            data: null,
+          });
         }
-
-        // Send a success response with the fetched tasks data
-        res.status(200).json(tasks);
-    } catch (error) {
-        // Handle any errors and send an internal server error response
-        res.status(500).json({ error: "Internal Server Error." });
+        return res.status(200).json({
+          success: true,
+          message: 'Successfully updated the task',
+          data: task,
+        });
+    }catch(error){
+        return res.status(500).json({
+            success:false,
+            message:error.message,
+            data:error,
+        });
     }
-}
-
-// For updating task data
-export const updateTask = async (req, res) => {
-    try {
-        // Extract task id from request parameters
-        const taskId = req.params.id;
-
-        // Check if the task with the given id exists
-        const taskExist = await Task.findOne({ _id: taskId });
-        if (!taskExist) {
-            return res.status(404).json({ message: "Task not found." });
+},
+/**
+ * 
+ * DELETE api/v1/tasks/:id
+ * 
+ * @param req
+ * @param res
+ * @returns {Promise<*>}
+ * 
+ */
+delete: async (req, res) =>{
+    try{
+        const task = await Task.findByIdAndDelete(req.params.id);
+        if(!task){
+            return res.status(404).json({
+                success:false,
+                message:'Task not found',
+                data:null,
+            });
         }
-
-        // Update the task data and return the updated task
-        const updatedTask = await Task.findByIdAndUpdate(taskId, req.body, { new: true });
-        res.status(201).json(updatedTask);
-    } catch (error) {
-        // Handle any errors and send an internal server error response
-        res.status(500).json({ error: "Internal Server Error." });
+        return res.status(200).json({
+            success:true,
+            message:'Successfully deleted the task',
+            data:task,
+        });
+    }catch(error){
+        return res.status(500).json({
+            success:false,
+            message:error.message,
+            data:error,
+        });
     }
-}
-
-// For deleting a task from the database
-export const deleteTask = async (req, res) => {
-    try {
-        // Extract task id from request parameters
-        const taskId = req.params.id;
-
-        // Check if the task with the given id exists
-        const taskExist = await Task.findOne({ _id: taskId });
-        if (!taskExist) {
-            return res.status(404).json({ message: "Task not found." });
-        }
-
-        // Delete the task from the database
-        await Task.findByIdAndDelete(taskId);
-
-        // Send a success response
-        res.status(201).json({ message: "Task deleted successfully." });
-    } catch (error) {
-        // Handle any errors and send an internal server error response
-        res.status(500).json({ error: "Internal Server Error." });
-    }
-}
-
+},
+};
+    

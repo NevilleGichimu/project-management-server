@@ -1,7 +1,11 @@
-import mongoose from "mongoose";
+const {Schema, model} = require('mongoose');
 
-const userSchema= new mongoose.Schema({
-    name:{
+const UserSchema = new Schema({
+    firstName:{
+        type:String,
+        required:true,
+    },
+    lastName:{
         type:String,
         required:true,
     },
@@ -9,10 +13,27 @@ const userSchema= new mongoose.Schema({
         type:String,
         required:true,
     },
-    address:{
+    password:{
         type:String,
         required:true,
     },
-});
+    role:{
+        type:String,
+        enum:['Admin', 'User'],
+        required:true,
+    },
+    projects:{
+        type:Schema.Types.ObjectId,
+        ref:'projects',
+    },
+    tasks:{
+        type:Schema.Types.ObjectId,
+        ref:'tasks',
+    },
+    teams:{
+        type:Schema.Types.ObjectId,
+        ref:'teams',
+    },
+}, { timestamps: true });
 
-export default mongoose.model("users", userSchema);
+module.exports = model('users', UserSchema);

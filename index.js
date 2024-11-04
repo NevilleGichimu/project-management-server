@@ -1,18 +1,34 @@
+//.env file configurations
+require('dotenv/config');
+
 // Import necessary modules
-import express from "express"; // Import Express framework
-import mongoose from "mongoose"; // Import Mongoose for MongoDB interactions
-import bodyParser from "body-parser"; // Import Body-parser for parsing request bodies
-import dotenv from "dotenv"; // Import dotenv for loading environment variables
-import route from "./routes/userRoutes.js"
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
+
+
+// Load environment variables from .env file
+dotenv.config();
+
+
+// Import routes from .routes
+const{
+    UserRoutes,
+    ProjectRoutes,
+    TaskRoutes,
+    TeamRoutes,
+    ClientRoutes,
+    } = require('./routes')
+
 
 // Initialize Express app
 const app = express();
 
 // Middleware for parsing JSON request bodies
+app.use(express.json());
 app.use(bodyParser.json());
 
-// Load environment variables from .env file
-dotenv.config();
 
 // Define port for the server to listen on
 const PORT = process.env.PORT || 5000;
@@ -33,7 +49,9 @@ mongoose
   .catch((error) => console.log(error)); // Log error if database connection fails
 
 
-  app.use("/api/user", route);
-  app.use("/api/task", route);
-  app.use("/api/project", route);
-  app.use("api/comment", route);
+// routes
+app.use('/api/v1/employees', UserRoutes);
+app.use('/api/v1/projects', ProjectRoutes);
+app.use('/api/v1/tasks', TaskRoutes);
+app.use('/api/v1/teams', TeamRoutes);
+app.use('/api/v1/clients', ClientRoutes);
